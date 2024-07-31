@@ -13,3 +13,7 @@ git config --global http.proxy 127.0.0.1:7890
 git config --global https.proxy 127.0.0.1:7890
 //7890是梯子的端口号
 ```
+#### git 完全取消最近的提交并回退到上一个状态
+```
+git reset --hard HEAD~1
+```
