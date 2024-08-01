@@ -17,3 +17,7 @@ git config --global https.proxy 127.0.0.1:7890
 ```
 git reset --hard HEAD~1
 ```
+#### 刷新DNS缓存
+```
+cmd中运行： ipconfig/flushdns
+```
