@@ -1,6 +1,8 @@
 ---
 title: git
-categories: git
+categories: 
+- 杂项
+- git
 ---
 
 #### git连接不上，刷新dns
