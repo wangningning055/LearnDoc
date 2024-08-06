@@ -4,6 +4,14 @@ categories:
 - 杂项
 - git
 ---
+#### git拉取并合并
+    git pull
+
+#### git只拉取不合并
+    git fetch
+
+#### git分支合并
+    git merge dev（把dev分支合并到当前分支）
 
 #### git连接不上，刷新dns
 ```shell
