@@ -3,6 +3,8 @@ title: git
 categories: 
 - 杂项
 - git
+tags :
+- 杂项
 ---
 #### git拉取并合并
     git pull
