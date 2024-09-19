@@ -7,13 +7,22 @@ tags :
 - 杂项
 ---
 #### git拉取并合并
+
+```shell
     git pull
+```
 
 #### git只拉取不合并
+
+```shell
     git fetch
+```
 
 #### git分支合并
+
+```shell
     git merge dev（把dev分支合并到当前分支）
+```
 
 #### git连接不上，刷新dns
 ```shell
