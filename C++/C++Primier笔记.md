@@ -590,6 +590,12 @@ void TestGeneralizedAlgorithm()
 #include<string>
 #include<iostream>
 
+class AbstructClass()
+{
+public:
+	void Func1() = 0; // 这表示这个是个纯虚函数，这个类是一个抽象类，不能直接实例化
+	void Func2() = 0;
+}
 
 class ClassLearn1 {
 	friend void GetClassPrivateData(ClassLearn1&); //友元函数声明，好让这个函数使用私有变量
@@ -602,6 +608,7 @@ public:
 	static const int aaaStatic = 100;
 	std::string data3;
 	ClassLearn1() = default; // 声明这个构造函数是默认的
+	ConstFunc() const; //后面加const是静态的成员函数，不能改变类的值
 	void SetPrivateData(int data)
 	{
 		data_privat = data;
