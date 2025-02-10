@@ -6,10 +6,37 @@ categories:
 tags :
 - 杂项
 ---
+
+
+#### git添加文件到暂存区
+
+```shell
+    git add <file>
+    git add . //添加所有文件
+
+```
+
+#### git 提交更改
+
+```shell
+    git commit -m "commit message"
+```
+
 #### git拉取并合并
 
 ```shell
     git pull
+```
+#### git查看分支
+
+```shell
+    git branch
+```
+
+#### git推送到远程仓库
+
+```shell
+    git push origin <branch-name>
 ```
 
 #### git只拉取不合并
@@ -41,4 +68,12 @@ git reset --hard HEAD~1
 #### 刷新DNS缓存
 ```
 cmd中运行： ipconfig/flushdns
+```
+
+#### hexo 常用指令
+```
+hexo重新生成： hexo g
+hexo清理生成文件夹： hexo clean
+hexo本地运行： hexo s
+hexo部署站点： hexo d
 ```
