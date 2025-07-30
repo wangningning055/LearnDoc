@@ -184,8 +184,229 @@ Shader "ShaderName"
 
 ### SubShader 块 
 
+ 	一个unity Shader文件可以包含多个SubShader，执行shader时，会从上到下执行subShader，找到第一个可以运行的运行，SubShader里面包括了渲染状态的设置，Tags,Lod,和多个Pass
 
 
 ### FallBack块
 
 当所有的SubShader都必能在当前的平台上运行，就会选择FallBack块指定的Shader来渲染
+
+
+
+### Shader基础结构示例
+
+``` shaderlab
+
+Shader "ShaderLearn/ShaderLearn1"	//这里决定了shader在材质shader选择的位置
+{
+    Properties
+    {
+		//Properties块里面的属性主要是为了将控制暴露在外，在具体的着色器代码块中还需要再声明一次才能和这里的属性建立连接
+		//前面的_Name是让代码使用的，后面的""里面的内容是外面材质面板显示的名字，逗号后面的参数是属性类型
+		_MainTex ("Texture", 2D) = "white" {}
+		_Int("intTest", Int) = 3
+		_Float("floatTest", Float) = 1.1
+		_Color("colorTest", Color) = (1,1,1,1)
+		_Float4("float4Test", Vector) = (1,1,1,1)
+		_Range("rangeTest", Range(5, 0)) = 1
+		_TestTex1("TextureTest1", 2D) = "white"{} //前面的""中放的是unity的默认纹理，后面的{}通常留空即可
+		_TestTex2("TextureTest2", 2D) = "black"{} //
+		_TestTex3("TextureTest3", 2D) = "gray"{} //
+		_TestTex4("TextureTest4", 2D) = "bump"{} //bump指的是法线贴图
+
+    }
+	SubShader
+	{
+		//一个unity Shader文件可以包含多个SubShader，执行shader时，会从上到下执行subShader，找到第一个可以运行的运行，SubShader里面包括了渲染状态的设置，Tags,Lod,和多个Pass
+
+		//SubShader设置渲染状态
+		ZWrite On //深度测试
+		ZTest Less //默认，深度值小于才写入，LEqual，小于等于
+		Cull Back //剔除设置
+		ColorMask RGB //只写入RGB， 0表示只写深度， A表示只写透明通道
+		Blend One One // 混合模式，alpha混合，加法混合（发光）， 乘法混合，关闭混合
+		BlendOp Add //混合运算方式
+		Offset 1, 1 // Z-fighting,阴影投射，描边, 第一个参数与多边形斜率有关，第二个参数是添加到最终深度的固定偏移
+
+		Stencil //模板缓冲设置
+		{ 
+			Ref 1
+			Comp Equal
+			Pass Replace
+		}
+
+		//SubShader Tags
+		//一个SubShader对应一个Tags，内容是键值对，用来告诉渲染引擎该怎样以及何时来渲染对象
+		Tags
+		{
+			"Queue" = "Transparent"			//渲染队列，
+			"RenderType" = "Opaque"			//渲染类型
+			"DisableBatching" = "false"		//是否使用批处理
+			"FalseNoShadowCasting" = "false"//是否会投射阴影
+			"IgnoreProjector" = "false"		//是否接收投射的阴影，通常用于半透明物体
+			"CanUseSpriteAtlas" = "true"	//是否用于Sprite
+			"PreviewType" = "Cube"			//预览面板的形状
+
+			//Queue介绍：
+			//决定对象在整体场景中的渲染顺序
+			//Background	1000	最先渲染，用于天空盒或远景背景
+			//Geometry	2000	默认值，大多数不透明物体（Opaque）使用
+			//AlphaTest	2450	透明度裁剪对象（如树叶、网格 UI）
+			//Transparent 3000	半透明对象，后渲染，前面的需先绘制
+			//Overlay		4000	最后渲染，常用于 UI、光晕、轮廓、遮罩等
+			//Tags { "Queue" = "Transparent+10" } 表示在普通的Transparent之后渲染
+
+			//RenderType介绍：
+			//对着色器进行分类，还可以用于着色器替换功能，方便管线进行判断和剔除以及各种后处理效果
+			//Opaque					不透明材质（默认）
+			//Transparent				半透明材质
+			//TransparentCutout		使用透明度遮罩裁剪（clip()）
+			//Background				用于天空盒、远景
+			//Overlay					UI、顶层效果
+			//TreeOpaque				树木模型，不透明部分
+			//TreeTransparentCutout	树木使用透明度裁剪
+			//Grass					草地模型
+		}
+
+		LOD 100 //LOD表示了当前shader的复杂度等级，由此来让之后的不同版本进行shader切换
+
+		//pass会有很多个，会挨个执行，一个pass代表一次draw call，是一次完整的渲染管线调度，因此尽量不要写太多的pass
+		Pass
+		{
+			Name "MYPASS" //Pass命名
+			//UsePass(ShaderLearn/MYPASS) 可以直接通过UsePass通过Pass名称来使用已有的Pass,注意全大写
+
+			//Pass里面也可以进行状态设置，Pass里面的状态设置会覆盖调SubShader里面的状态设置
+			ZWrite Off //深度测试
+
+			//Pass里面也有tags，和SubShader的Tags不同，有属于自己的Tags
+			Tags
+			{
+				"LightMode" = "ShadowCaster" //
+			}
+
+			//被CGPROGRAM和ENDCG包起来的就是hlsl的代码了，准确的来说并不是hlsl代码，是类似与hlsl核心语法的unity提供的特殊语言
+			CGPROGRAM
+				//以下简介了这种语言的语法
+
+				#pragma vertex vert //指定哪个函数是顶点着色器函数，
+				#pragma fragment frag //哪个函数是片元着色器函数
+				//include用来包含一些unity提供的函数，也可以自行定义一些include
+				#include "UnityCG.cginc"				//通用函数库，包含顶点变换函数，常用数学工具等
+				#include "UnityShaderVariables.cginc"	//定义了一些全局变量
+				#include "Lighting.cginc"				//光照相关
+				#include "AutoLight.cginc"				//用来处理光照贴图
+				float aaa;
+				float4 float4_1;
+				vector vec1; //vector包含四个float
+
+				float4 float4test = {1.0f, 2.0f, 3.0f, 4.0f};
+				float3 float3Test = float4test.xxy; //按位置赋值（swizzles）,float3的内容是（1.0， 1.0， 2.0）
+				
+				float4x4 matrixTest; //声明矩阵
+				matrix<int, 2, 2> matrixTest2;
+				matrix matrixTest3; //表示float4x4
+
+
+				matrixTest = {1,2,3,4}; //矩阵赋值
+				float2 matrixData = matrixTest_11_12; //矩阵取值（swizzles）
+				float matrixData2 = matrixTest[0][1];
+
+				//向量，矩阵乘法
+				float4 vec11 = 3 * float4_1;
+				matrix matrix_mul = mul(matrix, float4_1); //向量与矩阵的乘法需要mul函数
+
+				float3 arry1[100] //声明数组
+
+				struct structTest //结构体
+				{
+					float a;
+					float b;
+				}
+				//这里面也可以使用if else和while，但是并不推荐，并行计算遇到if else，会先执行if的像素，再执行else的像素，实际变成了串行的两个分支，期间被屏蔽的像素
+				//依然占用资源,while也一样，GPU得等最慢迭代次数最多的跑完才行，浪费性能，同时编译器可能展开大量指令，所以并不推荐添加这些分支循环逻辑
+				//实在要用的话用[branch][flatten]，[loop]、[unroll]来控制展开和分化
+
+
+				//函数只支持值传递，只有内联函数，支持in，out关键字，inout既能输入也能输出
+				bool func(in a, out b， inout c)
+				{
+
+					float a;
+
+					return false;
+				}
+
+				//提供了大量的全局函数来进行计算
+				float3 vecA;
+				float3 vecB;
+				cross(vecA, vecB);
+				cos(aaa);
+				ceil(aaa);
+				atan(aaa);
+
+				//语义，告诉GPU这个变量要从哪里拿取数据进行填充，语义会有POSITION0，POSITION1等等，这些是语义索引，用来区分多个同类型数据
+
+				//下面的语义表示在顶点着色器输入阶段的语义，代表来自mesh的数据，通常在结构体里面
+				struct appdata
+				{
+					float4 vertex : POSITION;		//顶点位置，
+					float3 normal : NORMAL;			//顶点法线
+					float4 tangent :TANGENT;		//顶点切线
+					float4 color : COLOR;			//顶点颜色
+					float2 uv1 : TEXCOORD0;			//n套uv坐标
+					float2 uv2 : TEXCOORD1;			//n套uv坐标
+					float3 binormal : BINORMAL;		//顶点副切线
+					float3 weight : BLENDWEIGHTS;	//骨骼权重
+					float3 indices : BLENDINDICES;	//骨骼索引
+				}
+
+				//下面的语义表示在顶点着色器输出-片元着色器输入的阶段，这个时候顶点着色器的输出已经经过了三角形设置和三角形遍历的光栅化处理，一般用在vertex shader的输出结构中
+				struct v2f{
+					float4 pos : SV_POSITION;		//裁剪空间的顶点位置
+					float2 uv : TEXCOORD;			//自定义插值数据
+					float4 col : COLOR;				//插值后的颜色数据
+					float3 normal : NORMAL;			//插值后的法线数据
+					float4 output : TANGENT;		//插值后的切线数据
+				}
+
+				//这个是片元着色器函数的名称，输入上面的填有顶点着色器语义的结构体appdata，输出填有顶点输出-片元输入语义的结构体v2f
+				v2f vert(appdata v)
+				{
+					v2f o;
+					return o;
+				}
+
+				// 下面的语义的片元着色器的输出语义，同时也是片元着色器的函数
+				fixed4 frag(v2f o) : SV_TARGET //输出颜色fixed4表示低精度，常用来颜色输出
+				{
+					return o.col;
+				}
+				float frag(v2f o) : SV_DEPTH //输出深度
+				{
+					return o.deph;
+				}
+
+				//下面是系统语义
+				float4 pos : SV_POSITION			//剪裁空间的顶点位置，用于顶点着色器的输出
+				float depth : SV_DEPTH				//深度值
+				uint sampleIndex : SV_SAMPLEINDEX	//当前采样点的索引
+				uint vertexID : SV_VERTEXID			//当前顶点的索引
+				uint instanceID : SV_INSTANCEID		//当前实例的索引
+				bool isFrontFace : SV_ISFRONTFACE	//当前片元是否为正面
+
+			ENDCG
+			
+
+			//unity 内置变换矩阵和相机参数
+		}
+
+	}
+}
+
+
+```
+
+## shader实例
+
+### 最简单的顶点片元着色器
