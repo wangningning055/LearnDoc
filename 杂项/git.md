@@ -70,6 +70,13 @@ git reset --hard HEAD~1
 cmd中运行： ipconfig/flushdns
 ```
 
+#### 处理行尾
+
+```
+git config --global core.autocrlf true
+
+```
+
 #### hexo 常用指令
 ```
 hexo重新生成： hexo g
@@ -77,3 +84,30 @@ hexo清理生成文件夹： hexo clean
 hexo本地运行： hexo s
 hexo部署站点： hexo d
 ```
+
+
+#### unity .gitignore
+
+/*
+
+!Assets/
+Assets/AllResource
+
+!Assets/Base/
+
+!Assets/Base/**
+
+
+!Packages/
+!ProjectSettings/
+!Tools/
+!Lua/
+!UserSettings/
+!Assets/Plugins/
+
+!Packages/**
+!ProjectSettings/**
+!Tools/**
+!Lua/**
+!UserSettings/**
+!Assets/Plugins/**
